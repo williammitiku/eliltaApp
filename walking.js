@@ -8,8 +8,6 @@ import {
   TextInput,
   View,
   TouchableOpacity,
-  Modal,
-  Button,
   Alert,
 } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
@@ -21,8 +19,6 @@ import * as FileSystem from 'expo-file-system';
 
 const Walking = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-
   const [value, setValue] = useState(null);
   const [totalPriceMinusVat, setTotalPriceMinusVat] = useState(0);
   const [one, setOne] = useState();
@@ -50,7 +46,7 @@ const Walking = () => {
   const [amountOfTheProduct, setAmountOfTheProduct] = useState("");
   const [showResults, setShowResults] = useState("");
   const [locationFetched, setLocationFetched] = useState(false);
-  const [receiptNumber, setReceiptNumber] = useState('');
+  const [receiptNumber, setReceiptNumer] = useState(null);
 
 
   const [shopInfo, setShopInfo] = useState(null);
@@ -59,7 +55,6 @@ const Walking = () => {
   const [shopCode, setShopCode] = useState('');
   const [shopNameFetched, setShopNameFetched]=useState('');
   const [ftCode, setFtCoode]=useState("");
-  
   
 
   const [phoneNumberFetched, setPhoneNumberFEtched] = useState('');
@@ -281,9 +276,6 @@ const Walking = () => {
       return;
     }
 
-
- 
-
     calculateTotalPrice();
     calculateVatValue();
     calculateTotalPriceMinusVat();
@@ -354,13 +346,7 @@ const Walking = () => {
   }, [totalPrice, vatValue]);
   // Update onChange methods of dropdowns to trigger calculateTotalPrice
   // Example for the first dropdown
-  const handleConfirmSale = () => {
-    // Handle the sale confirmation here
-    // You can submit the sale data or perform any other actions
-    
-    // Hide the modal after the sale is confirmed
-    setModalVisible(false);
-  };
+
   const handleClosure = async () => {
 
       Alert.alert(
@@ -394,7 +380,6 @@ const Walking = () => {
     console.log("nameOfSales:", nameOfSales);
     console.log("selectedProducts:", selectedProducts);
     console.log("totalPrice:", totalPrice);
-    console.log("receiptNumber:", receiptNumber);
 
     // if (
     //  // !nameOfShop.trim() ||
@@ -440,39 +425,30 @@ const Walking = () => {
         });
       }
       console.log(productData);
-
-      if (!receiptNumber) {
-        Alert.alert("Please Enter Receipt Number");
-        return;
-      }
-
-      else{
-        const response = await fetch(
-          "https://eliltatradingadmin.com/api/sale/createSale",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              nameOfTheShop: nameOfShop,
-              soldBy:salesId,
-              soldTo:shopCodeFetched,
-              transactionType:transactionValue,
-              phoneNumber: phoneNumber,
-              latitude: latitude,
-              longitude: longitude,
-              nameOfSales: nameOfSales,
-              products: selectedProducts, 
-              totalPrice: totalPrice,
-              receiptNumber:receiptNumber,
-              picture:picture, 
-              ftCode:ftCode
-            }),
-          }
-        );
-      }
-  
+      const response = await fetch(
+        "https://eliltatradingadmin.com/api/sale/createSale",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            nameOfTheShop: nameOfShop,
+            soldBy:salesId,
+            soldTo:shopCodeFetched,
+            transactionType:transactionValue,
+            phoneNumber: phoneNumber,
+            latitude: latitude,
+            longitude: longitude,
+            nameOfSales: nameOfSales,
+            products: selectedProducts, 
+            totalPrice: totalPrice,
+            receiptNumber:receiptNumber,
+            picture:picture, 
+            ftCode:ftCode
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to submit data");
@@ -725,6 +701,18 @@ const Walking = () => {
       
       </TouchableOpacity>
       )}
+
+          <TextInput
+            style={styles.input}
+            placeholder="Receipt Number"
+            value={receiptNumber}
+            onChangeText={(text) => {
+              // Only allow numeric input
+              const numericText = text.replace(/\D/g, '');
+              setReceiptNumer(numericText);
+            }}
+            keyboardType="numeric"
+          />
       <View
         style={{
           flexDirection: "row",
@@ -737,7 +725,7 @@ const Walking = () => {
 
         {/* Submit button aligned right */}
         <TouchableOpacity
-          onPress={() => setModalVisible(true)}
+          onPress={handleClosure}
           style={styles.rightButton}
           disabled={isLoading}
         >
@@ -749,30 +737,7 @@ const Walking = () => {
         </TouchableOpacity>
       </View>
        
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(false);
-        }}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text>Enter Receipt Number</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter receipt number"
-              value={receiptNumber}
-              onChangeText={text => setReceiptNumber(text)}
-            />
-            <View style={styles.buttonContainer}>
-              <Button title="Complete" onPress={handleSubmit} style={styles.button} />
-              <Button title="Close" onPress={() => setModalVisible(false)} style={styles.button} />
-            </View>
-          </View>
-        </View>
-      </Modal>
+ 
     </View>
   );
 };
@@ -785,27 +750,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // semi-transparent black background
-  },
-  modalContent: {
-    width: 300,
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 10,
-    elevation: 5, // for Android shadow
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 10,
-  },
-  button: {
-    width: '48%', // 50% width for each button with 2% space between them
   },
   logo: {
     width: 800, // Adjust the width of the logo as needed

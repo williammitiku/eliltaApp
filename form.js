@@ -28,6 +28,7 @@ const Form = () => {
   const [valueTwo, setValueTwo] = useState(null);
   const [valueThree, setValueThree] = useState(null);
   const [picture, setPicture] = useState("");
+  const [receiptNumber, setReceiptNumer] = useState(null);
   const [transactionValue, setTransactionValue] = useState(null);
   const [isFocus, setIsFocus] = useState(false);
   const [latitude, setLatitude] = useState(null);
@@ -91,6 +92,29 @@ const Form = () => {
         setImage(result.assets[0].uri);
       }
     };
+
+    useEffect(() => {
+      const fetchLocation = async () => {
+        try {
+          let { status } = await Location.requestForegroundPermissionsAsync();
+          if (status !== "granted") {
+            console.error("Permission to access location was denied");
+            return;
+          }
+    
+          let location = await Location.getCurrentPositionAsync({});
+          setLatitude(location.coords.latitude);
+          setLongitude(location.coords.longitude);
+          setLocationFetched(true);
+        } catch (error) {
+          console.error("Error getting location:", error);
+          Alert.alert("Error", "Failed to fetch location");
+        }
+      };
+    
+      fetchLocation();
+    }, []);
+  
   
     const convertImageToBase64 = async () => {
       try {
@@ -380,7 +404,17 @@ const Form = () => {
     console.log("selectedProducts:", selectedProducts);
     console.log("totalPrice:", totalPrice);
 
-  
+    if (
+     // !nameOfShop.trim() ||
+     // !phoneNumber.trim() ||
+     // !nameOfSales.trim() ||
+      !latitude ||
+      !longitude
+    ) {
+      Alert.alert("Please fill in all the required fields");
+      setIsLoading(false);
+      return;
+    }
 
     if (
       !(value && quantity) &&
@@ -432,6 +466,7 @@ const Form = () => {
             nameOfSales: nameOfSales,
             products: selectedProducts, 
             totalPrice: totalPrice,
+            receiptNumber:receiptNumber,
             picture:picture, 
             ftCode:ftCode
           }),
@@ -722,6 +757,18 @@ const Form = () => {
       
       </TouchableOpacity>
       )}
+
+<TextInput
+  style={styles.input}
+  placeholder="Receipt Number"
+  value={receiptNumber}
+  onChangeText={(text) => {
+    // Only allow numeric input
+    const numericText = text.replace(/\D/g, '');
+    setReceiptNumer(numericText);
+  }}
+  keyboardType="numeric"
+/>
       <View
         style={{
           flexDirection: "row",
@@ -730,11 +777,7 @@ const Form = () => {
         }}
       >
         {/* Get Location button aligned left */}
-        {/* <TouchableOpacity onPress={handleGetLocation} style={styles.leftButton}>
-          <Text style={{ color: "white", textAlign: "center" }}>
-            {locationFetched ? "Location Fetched" : "Get Location"}
-          </Text>
-        </TouchableOpacity> */}
+  
 
         {/* Submit button aligned right */}
         <TouchableOpacity
@@ -745,7 +788,7 @@ const Form = () => {
           {isLoading ? (
             <ActivityIndicator size="small" color="white" />
           ) : (
-            <Text style={{ color: "white", textAlign: "center" }}>Complete Sell</Text>
+            <Text style={{ color: "white", textAlign: "center" }}>Complete the Sell</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -785,7 +828,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     textAlign: "center",
     marginBottom: 0,
-    width: "0%", // Adjust width for alignment
+    width: "50%", // Adjust width for alignment
   },
 
   dropdownAndQuantityContainer: {
