@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "elilta-sales-app",
+    "slug": "elilta-sales-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/logo.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/logo.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.williammitiku.eliltasalesapp"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "6c15c6f3-c7a6-4c1b-bb3c-42936c8a9ddc"
+      }
+    }
+  }
+}
