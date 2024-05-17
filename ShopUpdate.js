@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 import {
   StyleSheet,
   ActivityIndicator,
@@ -14,10 +15,11 @@ import {
 import { Dropdown } from 'react-native-element-dropdown';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-
-
 import * as Location from "expo-location";
+
+
+
+
 
 const data = [
   { label: 'Mini Shop', value: 'miniShop' },
@@ -49,6 +51,7 @@ const dataThree = [
 
 
 const ShopUpdate = ({route}) => {
+  
   const navigation = useNavigation();
   const [imageUri, setImageUri] = useState(null);
   const [locationCheck, setLocationCheck]= useState(null);
@@ -93,7 +96,8 @@ const ShopUpdate = ({route}) => {
   const [ShopSubLocalityUpdate, setShopSubLocalityUpdate]=useState("");
   const [ShopLocalityUpdate, setShopLocalityUpdate]=useState("");
   const [ShopTypeUpdate, setShopTypeUpdate]=useState("");
-
+  const [image, setImage] = useState(null);
+  const [base64Image, setBase64Image] = useState(null);
 
   const handleLogout = async () => {
     try {
@@ -166,7 +170,19 @@ const ShopUpdate = ({route}) => {
     }
   }, [route]);
 
-  
+  const convertImageToBase64 = async () => {
+    try {
+      const fileInfo = await FileSystem.getInfoAsync(image);
+      const fileContent = await FileSystem.readAsStringAsync(image, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      setBase64Image(`data:image/${fileInfo.uri.split('.').pop()};base64,${fileContent}`);
+      setPicture(`data:image/${fileInfo.uri.split('.').pop()};base64,${fileContent}`);
+    } catch (error) {
+      console.error('Error converting image to base64:', error);
+    }
+  };
   
   useEffect(() => {
     const fetchLocation = async () => {
@@ -201,6 +217,48 @@ const ShopUpdate = ({route}) => {
   })
 }
 
+console.log('here is the base 64 string',base64Image);
+
+
+useEffect(() => {
+  if (image) {
+    convertImageToBase64();
+  }
+}, [image]);
+
+const pickImage = async () => {
+  // Launch the camera to allow the user to take a photo
+  let result = await ImagePicker.launchCameraAsync({
+    allowsEditing: true,
+    aspect: [4, 3],
+    quality: 1,
+  });
+
+  // Check if the user canceled the operation or not
+  if (!result.cancelled) {
+    // Set the selected image URI to the state
+    setImage(result.uri);
+  }
+};
+
+
+
+const handleImageUpload = async () => {
+  try {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permissionResult.granted === false) {
+      alert("Permission to access camera roll is required!");
+      return;
+    }
+    const pickerResult = await ImagePicker.launchImageLibraryAsync();
+    if (!pickerResult.cancelled) {
+      setImageUri(pickerResult.uri);
+    }
+  } catch (error) {
+    console.error("Error uploading image:", error);
+  }
+};
+
 const handleClosure = async () => {
 
     Alert.alert(
@@ -227,7 +285,7 @@ const handleSubmit = async () => {
      // console.log('ChannelTypeCheck', ChannelTypeCheck);
   
       // Update Channel Type only if ChannelTypeCheck is null
-      if (ChannelTypeCheck === "NA") {
+      
         const updateChannelTypeResponse = await fetch(
           'https://eliltatradingadmin.com/api/shop/updateChannelType',
           {
@@ -240,6 +298,7 @@ const handleSubmit = async () => {
               longitude:longitude,
               latitude:latitude,
               channelType: `${valueTwoUpdated}-${valueUpdated}`,
+              shopType:`${valueUpdated}`,
             }),
           }
         );
@@ -250,11 +309,6 @@ const handleSubmit = async () => {
   
         // If channel type is updated successfully, show a success message
         Alert.alert('Success', 'Updated successfully');
-      }
-      else {
-        Alert.alert('Success', 'Already Updated');
-      }
-  
   
       navigation.navigate('StartSelling');
   
@@ -273,8 +327,7 @@ const handleSubmit = async () => {
 
   return (
     <View style={styles.container}>
-        <Text style={styles.label}>Shop is  Available :</Text>
-        <Text style={styles.label}>Update Shop Information:</Text>        
+        <Text style={styles.label}>Shop is already registered, Update here:</Text>        
 
   
   <TextInput
@@ -350,8 +403,6 @@ const handleSubmit = async () => {
               <AntDesign style={styles.icon} color="black" name="Safety" size={20} />
             )}
           />
-
-
     {/* <TouchableOpacity onPress={handleImageUpload} style={styles.getImageButton}>
   <Text style={{ color: "white", textAlign: "center" }}>
     {imageUri ? "Image Selected" : "Upload Shop Image"}
@@ -375,11 +426,7 @@ const handleSubmit = async () => {
       </TouchableOpacity>
 
       {/* Submit button */}
-      <TouchableOpacity onPress={Navigate} style={styles.submitButton} disabled={isLoading}>
-        
-          <Text style={{ color: "white", textAlign: "center" }}>Sell To {ShopCodeUpdate}</Text>
-    
-      </TouchableOpacity>
+
 
  
         

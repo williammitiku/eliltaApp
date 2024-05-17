@@ -7,11 +7,15 @@ import CheckShop from './checkShop';
 import Shop from './shop';
 import ViewSales from './viewSales';
 import CloseTodaySale from './closeTodaySale';
+import ShopToday from './shopToday';
 import GalleryButton from './GalleryButton';
 import ShopUpdate from './ShopUpdate';
 import Walking from './walking';
 import Questionnaire from './Questionnaire';
 import QCheckShop from './qCheckShop';
+import ImageUpload from './ImageUpload';
+import CheckOutlet from './checkOutlet';
+import OutletToday from './outletToday';
 import { createStackNavigator } from '@react-navigation/stack';
 
 
@@ -22,6 +26,7 @@ const App = () => {
     <NavigationContainer>
       <Stack.Navigator>
         {/* Screen components should be direct children of Stack.Navigator */}
+        {/* <Stack.Screen name="Image" component={ImageUpload} /> */}
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Form" component={Form} />
         <Stack.Screen name="StartSelling" component={CheckShop} />
@@ -33,6 +38,9 @@ const App = () => {
         <Stack.Screen name="Walking" component={Walking} />
         <Stack.Screen name="Questionnaire" component={Questionnaire} />
         <Stack.Screen name="Survey" component={QCheckShop} />
+        <Stack.Screen name="ShopToday" component={ShopToday} />
+        <Stack.Screen name="Outlet" component={CheckOutlet} />
+        <Stack.Screen name="OutletToday" component={OutletToday} />
       </Stack.Navigator>
     </NavigationContainer>
   );

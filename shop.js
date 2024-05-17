@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 import {
   StyleSheet,
   ActivityIndicator,
@@ -12,10 +13,9 @@ import {
 } from "react-native";
 import { Dropdown } from 'react-native-element-dropdown';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Location from "expo-location";
+
 
 const data = [
   { label: 'Mini Shop', value: 'miniShop' },
@@ -31,6 +31,23 @@ const dataTwo = [
   { label: 'Medium', value: 'medium' },
   { label: 'Small', value: 'small' },
 ];
+
+const frequency = [
+  { label: 'Every Month', value: 'monthly' },
+  { label: 'Every 15 Days', value: 'twoTimesAmonth' },
+  { label: 'Every Week ', value: 'weekly' },
+  { label: 'Every Day ', value: 'daily' },
+];
+
+const dayData = [
+  { label: 'Monday', value: 'Monday' },
+  { label: 'Tuesday', value: 'Tuesday' },
+  { label: 'Wednesday', value: 'Wednesday' },
+  { label: 'Thursday', value: 'Thursday' },
+  { label: 'Friday', value: 'Friday' },
+  { label: 'Saturday', value: 'Saturday' },
+  { label: 'Sunday', value: 'Sunday' },
+];
 const dataThree = [
   { label: 'Akaky Kaliti', value: 'Akaky Kaliti' },
   { label: 'Addis Ketema', value: 'Addis Ketema' },
@@ -45,13 +62,51 @@ const dataThree = [
   { label: 'Lemi Kura', value: 'Lemi Kura' },
 ];
 
+const formFields = [
+  {
+    step: 1,
+    label: 'Outlet Information',
+    fields: [
+      { label: 'Outlet Name', key: 'outletName', placeholder: 'Enter Outlet Name' },
+     // { label: 'Phone Number', key: 'phoneNumber', placeholder: 'Enter Phone Number', keyboardType: 'phone-pad' },
+      //{ label: 'Preferred Ordering Day', key: 'preferredDay', placeholder: 'Enter Preferred Ordering Day' },
+      //{ label: 'Frequency', key: 'frequency', placeholder: 'Frequency' }
+    ]
+  },
+  {
+    step: 2,
+    label: 'Location Details',
+    fields: [
+      { label: 'Area Name', key: 'areaName', placeholder: 'Enter Area Name' },
+      { label: 'Locality', key: 'locality', placeholder: 'Enter Locality' },
+      { label: 'Sub Locality', key: 'subLocality', placeholder: 'Enter Sub Locality' },
+      
+    ]
+  },
+  {
+    step: 3,
+    label: 'Shop Details',
+    fields: [
+      { label: 'Outlet Capacity', key: 'outletCapacity', placeholder: 'Outlet Capacity' },
+      { label: 'Purchaser Name', key: 'purchaser', placeholder: 'Enter Purchase or Manager Name' }
+    ]
+  }
+];
 
-const Shop = ({route}) => {
+const Shop = ({ route }) => {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [formData, setFormData] = useState({});
   const navigation = useNavigation();
   const [imageUri, setImageUri] = useState(null);
   const [value, setValue] = useState(null);
   const [valueTwo, setValueTwo] = useState(null);
   const [valueThree, setValueThree] = useState(null);
+  const { phNumber } = route.params;
+
+  const [valuePreferredDay, setValuePreferredDay] = useState(null);
+  const [valueFrequency, setValueFrequency] = useState(null);
+  const [valueSubCity, setValueSubCity] = useState(null);
+  const [valueOutletType, setValueOutletType] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [totalPriceMinusVat, setTotalPriceMinusVat] = useState(0);
   const [vatValue, setVatValue] = useState(0);
@@ -78,225 +133,270 @@ const Shop = ({route}) => {
   const [subLocality, setSubLocality]=useState("");
   const [areaName, setAreaName]=useState("");
 
+  const [image, setImage] = useState(null);
+  const [base64Image, setBase64Image] = useState(null);
+
+  
+
+  const handleInputChange = (key, value) => {
+    setFormData(prevState => ({
+      ...prevState,
+      [key]: value
+    }));
+  };
+
   useEffect(() => {
-    const getEmailFromStorage = async () => {
+    if (phNumber) {
+      setPhoneNumber(phNumber);
+    }
+  }, [phNumber]);
+
+  useEffect(() => {
+    const fetchLocation = async () => {
       try {
-        const storedDataString = await AsyncStorage.getItem('userData');
-        const storedData = JSON.parse(storedDataString);
-        const userEmail = storedData.user.salesID;
-        setEmailFromStorage(userEmail);
-        console.log('Test', userEmail);
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          console.error("Permission to access location was denied");
+          return;
+        }
+  
+        let location = await Location.getCurrentPositionAsync({});
+        setLatitude(location.coords.latitude);
+        setLongitude(location.coords.longitude);
+  
+        // Log the fetched location
+        console.log("Fetched Location:", location.coords.latitude, location.coords.longitude);
       } catch (error) {
-        console.error('Error retrieving data from AsyncStorage:', error);
+        console.error("Error getting location:", error);
+        Alert.alert("Error", "Failed to fetch location");
       }
     };
-
-    getEmailFromStorage();
+  
+    fetchLocation();
   }, []);
-  
 
-  useEffect(() => {
-    if (route && route.params && route.params.phoneNumber) {
-      setPhoneNumber(route.params.phoneNumber);
-    }
-  }, [route]);
+  const handleNext = () => {
+    setCurrentStep(currentStep + 1);
+  };
 
-  
-  
-  const handleGetLocation = async () => {
-    try {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        console.error("Permission to access location was denied");
-        return;
-      }
-
-      let location = await Location.getCurrentPositionAsync({});
-      setLatitude(location.coords.latitude);
-      setLongitude(location.coords.longitude);
-      setLocationFetched(true);
-    } catch (error) {
-      console.error("Error getting location:", error);
-      Alert.alert("Error", "Failed to fetch location");
-    }
+  const handlePrev = () => {
+    setCurrentStep(currentStep - 1);
   };
 
   const handleSubmit = async () => {
     try {
-      setIsLoading(true);
-  
-      // Perform necessary data validations
-      if (!shopName || !phoneNumber || !latitude || !longitude) {
-        setIsLoading(false);
-        Alert.alert("Missing Information", "Please fill in all the fields and fetch the location.");
-        return;
+      
+      // if (formData.phoneNumber && !/^(9|7)\d{8}$/.test(formData.phoneNumber)) {
+      //   Alert.alert(
+      //     'Invalid Phone Number',
+      //     'Please enter a valid 9-digit number starting with 9 or 7.'
+      //   );
+      //   return; 
+      // }
+    
+      if (formData.outletCapacity && isNaN(formData.outletCapacity)) {
+        Alert.alert(
+          'Invalid Outlet Capacity',
+          'Outlet capacity should be a number.'
+        );
+        return; 
       }
+    
+      if (formData.shopName && !isNaN(formData.shopName)) {
+        Alert.alert(
+          'Invalid Outlet Name',
+          'Outlet name should not be a number.'
+        );
+        return; 
+      }
+      setIsLoading(true);
+
+      const storedDataString = await AsyncStorage.getItem('userData');
+      const storedData = JSON.parse(storedDataString);
+      const userId = storedData.user.salesID;
+
       const shopData = {
-        shop: {
-          shopCode: "SH123", // Assuming a static shop code or fetch dynamically
-          shopName: shopName,
-          longitude: parseFloat(longitude), // Store only the numerical value
-          latitude: parseFloat(latitude), // Store only the numerical value
+        outlet: {
+          outletName: formData.outletName,
+          longitude: parseFloat(longitude), 
+          latitude: parseFloat(latitude), 
           contactInfo: {
-            phoneNumber: phoneNumber,
+            phoneNumber: phNumber,
             email: 'shop@elilta.com',
           },
-          shopType: value, // Include value
-          channelType: `${valueTwo}-${value}`, 
-          areaName:areaName,
-          locality:locality,
-          subLocality:valueThree,
-          createdBy:emailFromStorage
+          areaName: formData.areaName,
+          outletType: valueOutletType,
+          locality: formData.locality,
+          subLocality: formData.subLocality,
+          subCity: valueSubCity,
+          outletCapacity: formData.outletCapacity,
+          frequency: valueFrequency,
+          purchaser: formData.purchaser,
+          createdBy: userId
         },
       };
-      // Perform the POST request to the API endpoint
-      const response = await fetch('https://eliltatradingadmin.com/api/shop/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(shopData),
-      });
-  
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
+      console.log('fhghfgfjgff',shopData);
+      const response = await fetch('https://eliltatradingadmin.com/api/outlet/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(shopData),
+        });
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+    
+        
+        Alert.alert('Success', 'Shop data submitted successfully');
+      //  navigation.navigate('StartSelling');
+    
+      setIsLoading(false);
+      } catch (error) {
+        console.error('Error submitting data:', error);
+        setIsLoading(false);
+        Alert.alert('Error', 'Failed to submit data');
       }
-  
-      // If the request was successful, show a success message
-      Alert.alert('Success', 'Shop data submitted successfully');
-      navigation.navigate('StartSelling');
-  
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error submitting data:', error);
-      setIsLoading(false);
-      Alert.alert('Error', 'Failed to submit data');
-    }
-  };
-
-  
-  const [shopName, setShopName] = useState("");
-  const [email, setEmail] = useState("");
-
+      console.log('Form Data:', formData);
+    };
   return (
     <View style={styles.container}>
-        <Text style={styles.label}>Shop is not Available :</Text>
-        <Text style={styles.label}>Enter Shop Information:</Text>        
-  <TextInput
-        style={styles.input}
-        placeholder="Shop Name"
-        value={shopName}
-        onChangeText={setShopName}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Phone Number"
-        value={phoneNumber}
-        onChangeText={setPhoneNumber}
-        keyboardType="phone-pad" // Show numeric keyboard
-      />
-   
-      <TextInput
-        style={styles.input}
-        placeholder="Area Name"
-        value={areaName}
-        onChangeText={setAreaName}
-      />
-      <Dropdown
-        style={styles.dropdown}
-        placeholderStyle={styles.placeholderStyle}
-        selectedTextStyle={styles.selectedTextStyle}
-        inputSearchStyle={styles.inputSearchStyle}
-        iconStyle={styles.iconStyle}
-        data={dataThree}
-        search
-        maxHeight={300}
-        labelField="label"
-        valueField="value"
-        placeholder="Select Sub City"
-        searchPlaceholder="Search..."
-        value={valueThree}
-        onChange={item => {
-          setValueThree(item.value);
-        }}
-        renderLeftIcon={() => (
-          <AntDesign style={styles.icon} color="black" name="Safety" size={20} />
-        )}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Locality"
-        value={locality}
-        onChangeText={setLocality}
-      />
-         <Dropdown
-        style={styles.dropdown}
-        placeholderStyle={styles.placeholderStyle}
-        selectedTextStyle={styles.selectedTextStyle}
-        inputSearchStyle={styles.inputSearchStyle}
-        iconStyle={styles.iconStyle}
-        data={data}
-        search
-        maxHeight={300}
-        labelField="label"
-        valueField="value"
-        placeholder="Select Shop Type"
-        searchPlaceholder="Search..."
-        value={value}
-        onChange={item => {
-          setValue(item.value);
-        }}
-        renderLeftIcon={() => (
-          <AntDesign style={styles.icon} color="black" name="Safety" size={20} />
-        )}
-      />
-    <Dropdown
-            style={styles.dropdown}
-            placeholderStyle={styles.placeholderStyle}
-            selectedTextStyle={styles.selectedTextStyle}
-            inputSearchStyle={styles.inputSearchStyle}
-            iconStyle={styles.iconStyle}
-            data={dataTwo}
-            search
-            maxHeight={300}
-            labelField="label"
-            valueField="value"
-            placeholder="Select Channel Type"
-            searchPlaceholder="Search..."
-            value={valueTwo}
-            onChange={item => {
-              setValueTwo(item.value);
-            }}
-            renderLeftIcon={() => (
-              <AntDesign style={styles.icon} color="black" name="Safety" size={20} />
-            )}
-          />
+    <Text style={styles.stepLabel}>{formFields[currentStep].label} for {phNumber}</Text>
+    {formFields[currentStep].fields.map((field, index) => (
+      <View key={index} style={styles.inputContainer}>
+        <Text style={styles.label}>{field.label}</Text>
+        <TextInput
+          style={styles.input}
+          placeholder={field.placeholder}
+          value={formData[field.key] || ''}
+          onChangeText={value => handleInputChange(field.key, value)}
+          keyboardType={field.keyboardType || 'default'}
+        />
+      </View>
+    ))}
+        {currentStep === 0 && (
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Select Preferred Day of Order </Text>
+        <Dropdown
+          style={styles.dropdown}
+          placeholderStyle={styles.placeholderStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          inputSearchStyle={styles.inputSearchStyle}
+          iconStyle={styles.iconStyle}
+          data={dayData}
+          search
+          maxHeight={300}
+          labelField="label"
+          valueField="value"
+          placeholder="Select Preferred Day of Order"
+          searchPlaceholder="Search..."
+          value={valuePreferredDay}
+          onChange={item => {
+            setValuePreferredDay(item.value);
+          }}
+          renderLeftIcon={() => (
+            <AntDesign style={styles.icon} color="black" name="Safety" size={20} />
+          )}
+        />
 
-
-    {/* <TouchableOpacity onPress={handleImageUpload} style={styles.getImageButton}>
-  <Text style={{ color: "white", textAlign: "center" }}>
-    {imageUri ? "Image Selected" : "Upload Shop Image"}
-  </Text>
-</TouchableOpacity> */}
-      {/* Other input fields, buttons, and components */}
-
-      {/* Get Location button */}
-      <TouchableOpacity onPress={handleGetLocation} style={styles.getLocationButton}>
-        <Text style={{ color: "white", textAlign: "center" }}>
-          {locationFetched ? "Location Fetched" : "Get Location"}
-        </Text>
-      </TouchableOpacity>
-
-      {/* Submit button */}
-      <TouchableOpacity onPress={handleSubmit} style={styles.submitButton} disabled={isLoading}>
-        {isLoading ? (
-          <ActivityIndicator size="small" color="white" />
-        ) : (
-          <Text style={{ color: "white", textAlign: "center" }}>Register Shop</Text>
-        )}
-      </TouchableOpacity>
+<Text style={styles.label}>Select Frequency</Text>
+        <Dropdown
+          style={styles.dropdown}
+          placeholderStyle={styles.placeholderStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          inputSearchStyle={styles.inputSearchStyle}
+          iconStyle={styles.iconStyle}
+          data={frequency}
+          search
+          maxHeight={300}
+          labelField="label"
+          valueField="value"
+          placeholder="Select Frequency of Need"
+          searchPlaceholder="Search..."
+          value={valueFrequency}
+          onChange={item => {
+            setValueFrequency(item.value);
+          }}
+          renderLeftIcon={() => (
+            <AntDesign style={styles.icon} color="black" name="Safety" size={20} />
+          )}
+        />
+      </View>
       
+    )}
+
+    {currentStep === 1 && (
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Select Sub City</Text>
+        <Dropdown
+          style={styles.dropdown}
+          placeholderStyle={styles.placeholderStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          inputSearchStyle={styles.inputSearchStyle}
+          iconStyle={styles.iconStyle}
+          data={dataThree}
+          search
+          maxHeight={300}
+          labelField="label"
+          valueField="value"
+          placeholder="Select Sub City"
+          searchPlaceholder="Search..."
+          value={valueSubCity}
+          onChange={item => {
+            setValueSubCity(item.value);
+          }}
+          renderLeftIcon={() => (
+            <AntDesign style={styles.icon} color="black" name="Safety" size={20} />
+          )}
+        />
+
+      <Text style={styles.label}>Select Outlet Type</Text>
+        <Dropdown
+          style={styles.dropdown}
+          placeholderStyle={styles.placeholderStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          inputSearchStyle={styles.inputSearchStyle}
+          iconStyle={styles.iconStyle}
+          data={data}
+          search
+          maxHeight={300}
+          labelField="label"
+          valueField="value"
+          placeholder="Select Outlet Type"
+          searchPlaceholder="Search..."
+          value={valueOutletType}
+          onChange={item => {
+            setValueOutletType(item.value);
+          }}
+          renderLeftIcon={() => (
+            <AntDesign style={styles.icon} color="black" name="Safety" size={20} />
+          )}
+        />
+      </View>
+      
+    )}
+    <View style={styles.buttonContainer}>
+      {currentStep > 0 && (
+        <TouchableOpacity onPress={handlePrev} style={styles.button}>
+          <Text style={styles.buttonText}>Previous</Text>
+        </TouchableOpacity>
+      )}
+      {currentStep < formFields.length - 1 ? (
+        <TouchableOpacity onPress={handleNext} style={styles.button}>
+          <Text style={styles.buttonText}>Next</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity onPress={handleSubmit} style={styles.button}>
+        {/* Conditional rendering based on isLoading state */}
+        {isLoading ? (
+          <ActivityIndicator color="white" size="small" />
+        ) : (
+          <Text style={styles.buttonText}>Submit</Text>
+        )}
+      </TouchableOpacity>
+      )}
     </View>
+  </View>
   );
 };
 
@@ -305,16 +405,15 @@ export default Shop;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 20,
+    padding: 20,
   },
-  label: {
+  stepLabel: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 10,
-    color: "#333",
-    width:'100%'
+  },
+  inputContainer: {
+    marginBottom: 20,
   },
   dropdown: {
     borderWidth: 1,
@@ -324,41 +423,31 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     width: "100%",
   },
-  getImageButton: {
-    backgroundColor: "black",
-    color: "white",
-    padding: 10,
-    borderRadius: 5,
-    textAlign: "center",
-    marginBottom: 10,
-    width: "100%",
+  label: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
   },
-  
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: '#ccc',
     borderRadius: 5,
     padding: 10,
-    marginBottom: 10,
-    width: "100%",
   },
-  getLocationButton: {
-    backgroundColor: "black",
-    color: "white",
-    padding: 10,
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  button: {
+    backgroundColor: 'black',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 5,
-    textAlign: "center",
-    marginBottom: 10,
-    width: "100%",
   },
-  submitButton: {
-    backgroundColor: "black",
-    color: "white",
-    padding: 10,
-    borderRadius: 5,
-    textAlign: "center",
-    marginTop: 10,
-    width: "100%",
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
-  // Other styles as needed
 });

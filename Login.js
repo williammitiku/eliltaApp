@@ -36,7 +36,7 @@ const Login = () => {
         const data = await response.json();
         if (data.status === 'success') {
           await AsyncStorage.setItem('userData', JSON.stringify(data));
-          navigation.navigate('StartSelling');
+          navigation.navigate('Outlet');
         } else {
           Alert.alert('Login Failed: Status is not success');
         }

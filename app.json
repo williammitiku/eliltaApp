@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "elilta-sales-app",
-    "slug": "elilta-sales-app",
+    "name": "elilta-sales",
+    "slug": "elilta-sales",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/logo.png",

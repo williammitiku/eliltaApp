@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const CheckShop = () => {
+const CheckOutlet = () => {
   const navigation = useNavigation();
   const [emailFromStorage, setEmailFromStorage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -58,7 +58,7 @@ const CheckShop = () => {
     try {
       setIsLoading(true);
 
-      const response = await fetch('https://eliltatradingadmin.com/api/shop/verifyShopExistence', {
+      const response = await fetch('https://eliltatradingadmin.com/api/outlet/verifyOutletExistence', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -73,11 +73,12 @@ const CheckShop = () => {
       const data = await response.json();
 
       if (data.status=='success') {
-        await AsyncStorage.setItem('shopInfo', JSON.stringify(data.shop));
+        await AsyncStorage.setItem('shopInfo', JSON.stringify(data.outlet));
+        //Alert.alert('Outlet Registered Already');
         navigation.navigate('ShopUpdate');
       } else {
-        navigation.navigate('RegisterShop', { phoneNumber: phoneNumber });
-        Alert.alert('Shop does not exist.');
+        navigation.navigate('RegisterShop', { phNumber: phoneNumber });
+        Alert.alert('Outlet does not exist.');
       }
       console.log('Response after shop verification:', data);
 
@@ -97,7 +98,7 @@ const CheckShop = () => {
         resizeMode="contain"
       />
 
-      <Text style={styles.label}>Enter Shop PhoneNumber :</Text>
+      <Text style={styles.label}>Enter Outlet PhoneNumber :</Text>
         
       <TextInput
         style={styles.input}
@@ -129,7 +130,7 @@ const CheckShop = () => {
         {isLoading ? (
           <ActivityIndicator size="small" color="white" />
         ) : (
-          <Text style={{ color: "white", textAlign: "center" }}>Submit and Sell</Text>
+          <Text style={{ color: "white", textAlign: "center" }}>Check</Text>
         )}
       </TouchableOpacity>
 
@@ -150,10 +151,10 @@ const CheckShop = () => {
        <View style={styles.bottomContainer}>
         <View style={styles.linkContainer}>
           <TouchableOpacity
-            onPress={() => navigation.navigate('ShopToday')}
+            onPress={() => navigation.navigate('OutletToday')}
             style={styles.linkText}
           >
-            <Text style={{ color: "blue", textAlign: "center" }}>View Your Sales</Text>
+            <Text style={{ color: "blue", textAlign: "center" }}>View Your Today Outlets</Text>
           </TouchableOpacity>
         </View>
 
@@ -170,7 +171,7 @@ const CheckShop = () => {
   );
 };
 
-export default CheckShop;
+export default CheckOutlet;
 
 const styles = StyleSheet.create({
   container: {
