@@ -26,7 +26,7 @@ const OutletToday = () => {
         const storedData = JSON.parse(storedDataString);
         const userId = storedData.user.salesID;
 
-        const response = await fetch('https://eliltatradingadmin.com/api/outlet/getTodayOutletByUser', {
+        const response = await fetch('https://elilta-api.onrender.com/api/outlet/getTodayOutletByUser', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

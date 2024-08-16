@@ -1,93 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useNavigation } from '@react-navigation/native';
 import {
   StyleSheet,
-  ActivityIndicator,
   Text,
-  TextInput,
   View,
   TouchableOpacity,
   Image,
-  Alert,
 } from "react-native";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const CheckShop = () => {
   const navigation = useNavigation();
-  const [emailFromStorage, setEmailFromStorage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState('');
-
-  const handleImageUpload = async () => {
-    try {
-      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (permissionResult.granted === false) {
-        alert("Permission to access camera roll is required!");
-        return;
-      }
-      const pickerResult = await ImagePicker.launchImageLibraryAsync();
-      if (!pickerResult.cancelled) {
-        setImageUri(pickerResult.uri);
-      }
-    } catch (error) {
-      console.error("Error uploading image:", error);
-    }
-  };
-
-  useEffect(() => {
-    const getEmailFromStorage = async () => {
-      try {
-        const storedDataString = await AsyncStorage.getItem('userData');
-        const storedData = JSON.parse(storedDataString);
-        const userEmail = storedData.user.email;
-        setEmailFromStorage(userEmail);
-      } catch (error) {
-        console.error('Error retrieving data from AsyncStorage:', error);
-      }
-    };
-
-    getEmailFromStorage();
-  }, []);
-
-  const handleSubmit = async () => {
-    if (!phoneNumber) {
-      Alert.alert('Please enter a phone number.');
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-
-      const response = await fetch('https://eliltatradingadmin.com/api/shop/verifyShopExistence', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ phoneNumber }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok.');
-      }
-
-      const data = await response.json();
-
-      if (data.status=='success') {
-        await AsyncStorage.setItem('shopInfo', JSON.stringify(data.shop));
-        navigation.navigate('ShopUpdate');
-      } else {
-        navigation.navigate('RegisterShop', { phoneNumber: phoneNumber });
-        Alert.alert('Shop does not exist.');
-      }
-      console.log('Response after shop verification:', data);
-
-    } catch (error) {
-      console.error('Error verifying shop existence:', error);
-      Alert.alert('Error verifying shop existence. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <View style={styles.container}>
@@ -97,75 +19,47 @@ const CheckShop = () => {
         resizeMode="contain"
       />
 
-      <Text style={styles.label}>Enter Shop PhoneNumber :</Text>
-        
-      <TextInput
-        style={styles.input}
-        placeholder="Phone Number"
-        value={phoneNumber}
-        onChangeText={(text) => {
-          if (/^\d*$/.test(text)) {
-            const sanitizedText = text.replace(/\D/g, '');
-            if ((sanitizedText.startsWith('9') || sanitizedText.startsWith('7')) &&
-              sanitizedText.length <= 9) {
-              setPhoneNumber(sanitizedText.slice(0, 9));
-            } else {
-              if (sanitizedText.length > 9) {
-                Alert.alert('Phone number should not exceed 9 digits');
-              } else if (sanitizedText.length > 0) {
-                Alert.alert('Phone number should start with 9 or 7');
-              }
-            }
-          }
-        }}
-        keyboardType="numeric"
-      />
-
+      {/* Button for "Today's Shops" */}
       <TouchableOpacity
-        onPress={handleSubmit}
-        style={styles.rightButton}
-        disabled={isLoading}
+        onPress={() => navigation.navigate('Today')}
+        style={styles.button}
       >
-        {isLoading ? (
-          <ActivityIndicator size="small" color="white" />
-        ) : (
-          <Text style={{ color: "white", textAlign: "center" }}>Submit and Sell</Text>
-        )}
+        <Text style={styles.buttonText}>Today's Shops</Text>
       </TouchableOpacity>
 
-      {/* <TouchableOpacity
-        onPress={() => navigation.navigate('Walking')}
-        style={styles.linkText}
+      {/* Button to create a new shop */}
+      <TouchableOpacity
+        onPress={() => navigation.navigate('RegisterShop')}
+        style={styles.button}
       >
-        <Text style={{ color: "blue", textAlign: "center" }}>Walking Customer?</Text>
-      </TouchableOpacity> */}
+        <Text style={styles.buttonText}>Create New Shop</Text>
+      </TouchableOpacity>
 
-      {/* <TouchableOpacity
-        onPress={() => navigation.navigate('Survey')}
-        style={styles.linkText}
+      {/* Button to see accounts */}
+      <TouchableOpacity
+        onPress={() => navigation.navigate('Accounts')}
+        style={styles.button}
       >
-        <Text style={{ color: "blue", textAlign: "center" }}>Questionnaire?</Text>
-      </TouchableOpacity> */}
+        <Text style={styles.buttonText}>See Your Accounts</Text>
+      </TouchableOpacity>
 
-       <View style={styles.bottomContainer}>
-        <View style={styles.linkContainer}>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('ShopToday')}
-            style={styles.linkText}
-          >
-            <Text style={{ color: "blue", textAlign: "center" }}>View Your Sales</Text>
-          </TouchableOpacity>
-        </View>
+      {/* Button to see stats */}
+      <TouchableOpacity
+        onPress={() => navigation.navigate('Dashboard')}
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>See Your Stats</Text>
+      </TouchableOpacity>
 
-        {/* <View style={styles.linkContainer}>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('CloseTodaySale')}
-            style={styles.linkText}
-          >
-            <Text style={{ color: "blue", textAlign: "center" }}>Close Today Sale</Text>
-          </TouchableOpacity>
-        </View> */}
-      </View> 
+      {/* Additional buttons */}
+      <TouchableOpacity
+        onPress={() => navigation.navigate('ManageCredit')}
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>Manage Credit</Text>
+      </TouchableOpacity>
+
+
     </View>
   );
 };
@@ -184,43 +78,16 @@ const styles = StyleSheet.create({
     height: 100,
     marginBottom: 20,
   },
-  label: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 10,
-    color: "#333",
-    width: '100%'
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
-    width: "100%",
-  },
-  bottomContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    position: 'absolute',
-    bottom: 20,
-    width: '100%',
-    alignItems: 'center',
-  },
-  linkContainer: {
-    flex: 1,
-  },
-  linkText: {
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  rightButton: {
+  button: {
     backgroundColor: "black",
-    color: "white",
-    padding: 8,
+    padding: 15,
     borderRadius: 5,
+    width: "80%",
+    marginVertical: 10,
+  },
+  buttonText: {
+    color: "white",
     textAlign: "center",
-    marginTop: 0,
-    width: "100%",
+    fontSize: 16,
   },
 });

@@ -33,7 +33,7 @@ const ViewSales = () => {
         // Fetch sales data using the retrieved email
         const fetchSalesData = async () => {
           try {
-            const response = await fetch('https://eliltatradingadmin.com/api/sale/YourTodaySales', {
+            const response = await fetch('https://elilta-api.onrender.com/api/sale/YourTodaySales', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',

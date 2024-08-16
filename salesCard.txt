@@ -1,0 +1,89 @@
+import React from 'react';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const SalesCard = ({ sale }) => {
+  const {
+    saleCode,
+    transactionType,
+    shopInfo,
+    totalPrice,
+  } = sale;
+
+  return (
+    <TouchableOpacity style={styles.card} onPress={() => alert(`Clicked on ${saleCode}`)}>
+      <LinearGradient
+        colors={['#ff7e5f', '#feb47b']}
+        style={styles.gradient}
+      >
+        <View style={styles.cardContent}>
+          <Text style={styles.cardTitle}>Sale Code: {saleCode}</Text>
+          <Text style={styles.cardDetail}>Transaction Type: {transactionType}</Text>
+          <Text style={styles.cardDetail}>Shop Name: {shopInfo.shopName}</Text>
+          <Text style={styles.cardValue}>Total Price: ETB {totalPrice}</Text>
+        </View>
+      </LinearGradient>
+    </TouchableOpacity>
+  );
+};
+
+const Dashboard = () => {
+  // Dummy data based on the structure you provided
+  const salesData = {
+    saleCode: "ORD-FGGFYR",
+    transactionType: "credit",
+    shopInfo: {
+      shopName: "Hhhh",
+    },
+    totalPrice: 100,
+  };
+
+  return (
+    <View style={styles.container}>
+      <SalesCard sale={salesData} />
+    </View>
+  );
+};
+
+export default Dashboard;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#f5f5f5',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  card: {
+    width: '90%',
+    marginVertical: 10,
+    borderRadius: 10,
+    overflow: 'hidden',
+    elevation: 5,
+  },
+  gradient: {
+    borderRadius: 10,
+    padding: 20,
+  },
+  cardContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 10,
+  },
+  cardDetail: {
+    fontSize: 16,
+    color: '#fff',
+    marginBottom: 5,
+  },
+  cardValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+});

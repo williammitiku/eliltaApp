@@ -17,6 +17,11 @@ import ImageUpload from './ImageUpload';
 import CheckOutlet from './checkOutlet';
 import OutletToday from './outletToday';
 import { createStackNavigator } from '@react-navigation/stack';
+import Dashboard from './Dashboard';
+import CardTable from './cardTable';
+import SalesCard from './salesCard'
+import TodayAccounts from './todayAccounts';
+import ManageCredit from './ManageCredit';
 
 
 const Stack = createStackNavigator();
@@ -41,6 +46,16 @@ const App = () => {
         <Stack.Screen name="ShopToday" component={ShopToday} />
         <Stack.Screen name="Outlet" component={CheckOutlet} />
         <Stack.Screen name="OutletToday" component={OutletToday} />
+        <Stack.Screen name="Dashboard" component={Dashboard}/>
+        <Stack.Screen name="Accounts" component={CardTable}/>
+        <Stack.Screen name="Sales" component={SalesCard}/>
+        <Stack.Screen name="Today" component={TodayAccounts}/>
+        <Stack.Screen name="ManageCredit" component={ManageCredit}/>
+
+        
+
+
+
       </Stack.Navigator>
     </NavigationContainer>
   );

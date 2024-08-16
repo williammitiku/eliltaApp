@@ -122,7 +122,7 @@ const ShopUpdate = ({route}) => {
         if (jsonValue !== null) {
           const data = JSON.parse(jsonValue);
           console.log(data)
-          setShopNameUpdate(data.shopName);
+          setShopNameUpdate(data.outletName);
           setShopPhoneNumberUpdate(data.contactInfo.phoneNumber);
           setShopAreaUpdate(data.areaName);
           setShopchannelTypeUpdate(data.channelType);
@@ -287,7 +287,7 @@ const handleSubmit = async () => {
       // Update Channel Type only if ChannelTypeCheck is null
       
         const updateChannelTypeResponse = await fetch(
-          'https://eliltatradingadmin.com/api/shop/updateChannelType',
+          'https://elilta-api.onrender.com/api/shop/updateChannelType',
           {
             method: 'POST',
             headers: {
@@ -310,7 +310,7 @@ const handleSubmit = async () => {
         // If channel type is updated successfully, show a success message
         Alert.alert('Success', 'Updated successfully');
   
-      navigation.navigate('StartSelling');
+      // navigation.navigate('Form');
   
       setIsLoading(false);
     } catch (error) {
@@ -424,6 +424,7 @@ const handleSubmit = async () => {
           <Text style={{ color: "white", textAlign: "center" }}>Update Shop Information</Text>
         )}
       </TouchableOpacity>
+      
 
       {/* Submit button */}
 

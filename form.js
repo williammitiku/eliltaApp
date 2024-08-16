@@ -8,13 +8,14 @@ import {
   TextInput,
   View,
   TouchableOpacity,
-  Alert,
+  Alert
 } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
 import { AntDesign } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
+
 
 
 const Form = () => {
@@ -62,14 +63,25 @@ const Form = () => {
     const [salesId, setSalesId] = useState('');
     const [locationCheck, setLocationCheck]= useState(0);
     const data = [
-      { label: 'cash', value: 'cash' },
-      { label: 'Bank Transaction', value: 'bankTransaction' },
+      { label: 'Cash', value: 'cash' },
+      { label: 'Credit', value: 'credit' },
     ];
 
 
     const [image, setImage] = useState(null);
     const [base64Image, setBase64Image] = useState(null);
     console.log('here is the base 64 string',picture);
+
+
+    const [date, setDate] = useState(new Date());
+
+  const onChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setShow(false);
+    setDate(currentDate);
+    // Format the date as needed
+    // setFtCode(currentDate.toDateString()); // Example of setting the formatted date
+  };
   
     useEffect(() => {
       if (image) {
@@ -92,6 +104,8 @@ const Form = () => {
         setImage(result.assets[0].uri);
       }
     };
+
+
 
     useEffect(() => {
       const fetchLocation = async () => {
@@ -141,7 +155,7 @@ const Form = () => {
         const jsonValue = await AsyncStorage.getItem('userData');
         if (jsonValue !== null) {
           const data = JSON.parse(jsonValue);
-          setSalesId(data.user.salesID); // Assuming salesID is stored as 'salesID'
+          setSalesId(data.user._id); // Assuming salesID is stored as 'salesID'
           console.log('Fetched salesID:', data.user.salesID);
         }
       } catch (error) {
@@ -197,7 +211,7 @@ const Form = () => {
 
   const fetchProductData = async () => {
     try {
-      const response = await fetch("https://eliltatradingadmin.com/api/item/getAll");
+      const response = await fetch("https://elilta-api.onrender.com/api/item/getAll");
       if (!response.ok) {
         throw new Error("Failed to fetch data");
       }
@@ -218,7 +232,7 @@ const Form = () => {
 
   const fetchProductDataTwo = async () => {
     try {
-      const response = await fetch("https://eliltatradingadmin.com/api/item/getAll");
+      const response = await fetch("https://elilta-api.onrender.com/api/item/getAll");
       if (!response.ok) {
         throw new Error("Failed to fetch data");
       }
@@ -238,7 +252,7 @@ const Form = () => {
 
   const fetchProductDataThree = async () => {
     try {
-      const response = await fetch("https://eliltatradingadmin.com/api/item/getAll");
+      const response = await fetch("https://elilta-api.onrender.com/api/item/getAll");
       if (!response.ok) {
         throw new Error("Failed to fetch data");
       }
@@ -449,7 +463,7 @@ const Form = () => {
       }
       console.log(productData);
       const response = await fetch(
-        "https://eliltatradingadmin.com/api/sale/createSale",
+        "https://elilta-api.onrender.com/api/sale/createSale",
         {
           method: "POST",
           headers: {
@@ -467,6 +481,7 @@ const Form = () => {
             products: selectedProducts, 
             totalPrice: totalPrice,
             receiptNumber:receiptNumber,
+            type:'shop',
             picture:picture, 
             ftCode:ftCode
           }),
@@ -486,7 +501,7 @@ const Form = () => {
         if (locationCheck === 0) {
           try {
             const response = await fetch(
-              "https://eliltatradingadmin.com/api/shop/updateLocation",
+              "https://elilta-api.onrender.com/api/shop/updateLocation",
               {
                 method: "POST",
                 headers: {
@@ -739,36 +754,15 @@ const Form = () => {
         )}
       />
 
-{transactionValue === 'bankTransaction' && (
-        <TextInput
-          style={styles.input}
-          placeholder="FT Code"
-          value={ftCode}
-          onChangeText={setFtCoode}
-          //editable={false}
-        />
+            {transactionValue === 'credit' && (
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Due Date"
+                      value={ftCode}
+                      onChangeText={setFtCoode}
+                      //editable={false}
+                    />
       )}
-
-{transactionValue === 'bankTransaction' && (
-    <TouchableOpacity onPress={pickImage} style={[styles.leftButton, styles.input]}>
-        <Text style={{ color: "white", textAlign: "center" }}>
-          {picture ? "Transactiion Image Uploaded" : "Upload Transactiion Image"}
-        </Text>
-      
-      </TouchableOpacity>
-      )}
-
-<TextInput
-  style={styles.input}
-  placeholder="Receipt Number"
-  value={receiptNumber}
-  onChangeText={(text) => {
-    // Only allow numeric input
-    const numericText = text.replace(/\D/g, '');
-    setReceiptNumer(numericText);
-  }}
-  keyboardType="numeric"
-/>
       <View
         style={{
           flexDirection: "row",

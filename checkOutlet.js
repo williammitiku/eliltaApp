@@ -58,7 +58,7 @@ const CheckOutlet = () => {
     try {
       setIsLoading(true);
 
-      const response = await fetch('https://eliltatradingadmin.com/api/outlet/verifyOutletExistence', {
+      const response = await fetch('https://elilta-api.onrender.com/api/outlet/verifyOutletExistence', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

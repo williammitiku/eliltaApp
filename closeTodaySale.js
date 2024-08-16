@@ -141,7 +141,7 @@ const Shop = ({route}) => {
   useEffect(() => {
     const fetchTotalAmount = async () => {
       try {
-        const response = await fetch('https://eliltatradingadmin.com/api/sale/YourTodayCashSales', {
+        const response = await fetch('https://elilta-api.onrender.com/api/sale/YourTodayCashSales', {
           method: 'POST', // Update to POST method
           headers: {
             'Content-Type': 'application/json',
@@ -170,7 +170,7 @@ const Shop = ({route}) => {
   useEffect(() => {
     const fetchCloses = async () => {
       try {
-        const response = await fetch('https://eliltatradingadmin.com/api/closeDay/getYourCloses', {
+        const response = await fetch('https://elilta-api.onrender.com/api/closeDay/getYourCloses', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -310,7 +310,7 @@ const Shop = ({route}) => {
   
       // Perform the POST request to the API endpoint
       const response = await fetch(
-        'https://eliltatradingadmin.com/api/closeDay/create',
+        'https://elilta-api.onrender.com/api/closeDay/create',
         {
           method: 'POST',
           headers: {

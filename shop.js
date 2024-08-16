@@ -65,10 +65,10 @@ const dataThree = [
 const formFields = [
   {
     step: 1,
-    label: 'Outlet Information',
+    label: 'shop Information',
     fields: [
-      { label: 'Outlet Name', key: 'outletName', placeholder: 'Enter Outlet Name' },
-     // { label: 'Phone Number', key: 'phoneNumber', placeholder: 'Enter Phone Number', keyboardType: 'phone-pad' },
+      { label: 'shop Name', key: 'shopName', placeholder: 'Enter shop Name' },
+      { label: 'Phone Number', key: 'phoneNumber', placeholder: 'Enter Phone Number', keyboardType: 'phone-pad' },
       //{ label: 'Preferred Ordering Day', key: 'preferredDay', placeholder: 'Enter Preferred Ordering Day' },
       //{ label: 'Frequency', key: 'frequency', placeholder: 'Frequency' }
     ]
@@ -87,13 +87,13 @@ const formFields = [
     step: 3,
     label: 'Shop Details',
     fields: [
-      { label: 'Outlet Capacity', key: 'outletCapacity', placeholder: 'Outlet Capacity' },
+      { label: 'shop Capacity', key: 'shopCapacity', placeholder: 'shop Capacity' },
       { label: 'Purchaser Name', key: 'purchaser', placeholder: 'Enter Purchase or Manager Name' }
     ]
   }
 ];
 
-const Shop = ({ route }) => {
+const Shop = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({});
   const navigation = useNavigation();
@@ -101,12 +101,11 @@ const Shop = ({ route }) => {
   const [value, setValue] = useState(null);
   const [valueTwo, setValueTwo] = useState(null);
   const [valueThree, setValueThree] = useState(null);
-  const { phNumber } = route.params;
 
   const [valuePreferredDay, setValuePreferredDay] = useState(null);
   const [valueFrequency, setValueFrequency] = useState(null);
   const [valueSubCity, setValueSubCity] = useState(null);
-  const [valueOutletType, setValueOutletType] = useState(null);
+  const [valueshopType, setValueshopType] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [totalPriceMinusVat, setTotalPriceMinusVat] = useState(0);
   const [vatValue, setVatValue] = useState(0);
@@ -119,7 +118,6 @@ const Shop = ({ route }) => {
   const [totalPrice, setTotalPrice] = useState(0);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [nameOfShop, setNameOfShop] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
   const [tinNumber, setTinNumber] = useState("");
   const [shopType, setShopType] = useState("");
   const [picture, setPicture] = useState("");
@@ -136,7 +134,6 @@ const Shop = ({ route }) => {
   const [image, setImage] = useState(null);
   const [base64Image, setBase64Image] = useState(null);
 
-  
 
   const handleInputChange = (key, value) => {
     setFormData(prevState => ({
@@ -145,11 +142,7 @@ const Shop = ({ route }) => {
     }));
   };
 
-  useEffect(() => {
-    if (phNumber) {
-      setPhoneNumber(phNumber);
-    }
-  }, [phNumber]);
+
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -194,18 +187,18 @@ const Shop = ({ route }) => {
       //   return; 
       // }
     
-      if (formData.outletCapacity && isNaN(formData.outletCapacity)) {
+      if (formData.shopCapacity && isNaN(formData.shopCapacity)) {
         Alert.alert(
-          'Invalid Outlet Capacity',
-          'Outlet capacity should be a number.'
+          'Invalid shop Capacity',
+          'shop capacity should be a number.'
         );
         return; 
       }
     
       if (formData.shopName && !isNaN(formData.shopName)) {
         Alert.alert(
-          'Invalid Outlet Name',
-          'Outlet name should not be a number.'
+          'Invalid shop Name',
+          'shop name should not be a number.'
         );
         return; 
       }
@@ -213,30 +206,31 @@ const Shop = ({ route }) => {
 
       const storedDataString = await AsyncStorage.getItem('userData');
       const storedData = JSON.parse(storedDataString);
-      const userId = storedData.user.salesID;
+      const userId = storedData.user._id;
 
       const shopData = {
-        outlet: {
-          outletName: formData.outletName,
+        shop: {
+          shopName: formData.shopName,
           longitude: parseFloat(longitude), 
           latitude: parseFloat(latitude), 
           contactInfo: {
-            phoneNumber: phNumber,
+            phoneNumber: formData.phoneNumber,
             email: 'shop@elilta.com',
           },
           areaName: formData.areaName,
-          outletType: valueOutletType,
+          shopType: valueshopType,
           locality: formData.locality,
           subLocality: formData.subLocality,
           subCity: valueSubCity,
-          outletCapacity: formData.outletCapacity,
+          shopCapacity: formData.shopCapacity,
+          preferredOrderingDay:valuePreferredDay,
           frequency: valueFrequency,
           purchaser: formData.purchaser,
           createdBy: userId
         },
       };
       console.log('fhghfgfjgff',shopData);
-      const response = await fetch('https://eliltatradingadmin.com/api/outlet/create', {
+      const response = await fetch('https://elilta-api.onrender.com/api/shop/create', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -249,7 +243,7 @@ const Shop = ({ route }) => {
     
         
         Alert.alert('Success', 'Shop data submitted successfully');
-      //  navigation.navigate('StartSelling');
+        //  navigation.navigate('Form');
     
       setIsLoading(false);
       } catch (error) {
@@ -261,7 +255,7 @@ const Shop = ({ route }) => {
     };
   return (
     <View style={styles.container}>
-    <Text style={styles.stepLabel}>{formFields[currentStep].label} for {phNumber}</Text>
+    <Text style={styles.stepLabel}>{formFields[currentStep].label}</Text>
     {formFields[currentStep].fields.map((field, index) => (
       <View key={index} style={styles.inputContainer}>
         <Text style={styles.label}>{field.label}</Text>
@@ -274,56 +268,9 @@ const Shop = ({ route }) => {
         />
       </View>
     ))}
-        {currentStep === 0 && (
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Select Preferred Day of Order </Text>
-        <Dropdown
-          style={styles.dropdown}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          iconStyle={styles.iconStyle}
-          data={dayData}
-          search
-          maxHeight={300}
-          labelField="label"
-          valueField="value"
-          placeholder="Select Preferred Day of Order"
-          searchPlaceholder="Search..."
-          value={valuePreferredDay}
-          onChange={item => {
-            setValuePreferredDay(item.value);
-          }}
-          renderLeftIcon={() => (
-            <AntDesign style={styles.icon} color="black" name="Safety" size={20} />
-          )}
-        />
 
-<Text style={styles.label}>Select Frequency</Text>
-        <Dropdown
-          style={styles.dropdown}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          iconStyle={styles.iconStyle}
-          data={frequency}
-          search
-          maxHeight={300}
-          labelField="label"
-          valueField="value"
-          placeholder="Select Frequency of Need"
-          searchPlaceholder="Search..."
-          value={valueFrequency}
-          onChange={item => {
-            setValueFrequency(item.value);
-          }}
-          renderLeftIcon={() => (
-            <AntDesign style={styles.icon} color="black" name="Safety" size={20} />
-          )}
-        />
-      </View>
-      
-    )}
+
+    
 
     {currentStep === 1 && (
       <View style={styles.inputContainer}>
@@ -350,7 +297,7 @@ const Shop = ({ route }) => {
           )}
         />
 
-      <Text style={styles.label}>Select Outlet Type</Text>
+      <Text style={styles.label}>Select shop Type</Text>
         <Dropdown
           style={styles.dropdown}
           placeholderStyle={styles.placeholderStyle}
@@ -362,11 +309,11 @@ const Shop = ({ route }) => {
           maxHeight={300}
           labelField="label"
           valueField="value"
-          placeholder="Select Outlet Type"
+          placeholder="Select shop Type"
           searchPlaceholder="Search..."
-          value={valueOutletType}
+          value={valueshopType}
           onChange={item => {
-            setValueOutletType(item.value);
+            setValueshopType(item.value);
           }}
           renderLeftIcon={() => (
             <AntDesign style={styles.icon} color="black" name="Safety" size={20} />

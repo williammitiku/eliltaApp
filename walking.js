@@ -174,7 +174,7 @@ const Walking = () => {
 
   const fetchProductData = async () => {
     try {
-      const response = await fetch("https://eliltatradingadmin.com/api/item/getAll");
+      const response = await fetch("https://elilta-api.onrender.com/api/item/getAll");
       if (!response.ok) {
         throw new Error("Failed to fetch data");
       }
@@ -195,7 +195,7 @@ const Walking = () => {
 
   const fetchProductDataTwo = async () => {
     try {
-      const response = await fetch("https://eliltatradingadmin.com/api/item/getAll");
+      const response = await fetch("https://elilta-api.onrender.com/api/item/getAll");
       if (!response.ok) {
         throw new Error("Failed to fetch data");
       }
@@ -215,7 +215,7 @@ const Walking = () => {
 
   const fetchProductDataThree = async () => {
     try {
-      const response = await fetch("https://eliltatradingadmin.com/api/item/getAll");
+      const response = await fetch("https://elilta-api.onrender.com/api/item/getAll");
       if (!response.ok) {
         throw new Error("Failed to fetch data");
       }
@@ -426,7 +426,7 @@ const Walking = () => {
       }
       console.log(productData);
       const response = await fetch(
-        "https://eliltatradingadmin.com/api/sale/createSale",
+        "https://elilta-api.onrender.com/api/sale/createSale",
         {
           method: "POST",
           headers: {

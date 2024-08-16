@@ -21,9 +21,9 @@ const Login = () => {
   const [loading, setLoading] = useState(false); 
 
   const handleLogin = async () => {
-    setLoading(true); // Set loading to true on login attempt
+    setLoading(true); // Set loading to true on login attemp
     try {
-      const response = await fetch('https://eliltatradingadmin.com/api/user/login', {
+      const response = await fetch('https://elilta-api.onrender.com/api/user/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,7 +36,7 @@ const Login = () => {
         const data = await response.json();
         if (data.status === 'success') {
           await AsyncStorage.setItem('userData', JSON.stringify(data));
-          navigation.navigate('Outlet');
+          navigation.navigate('StartSelling');
         } else {
           Alert.alert('Login Failed: Status is not success');
         }
